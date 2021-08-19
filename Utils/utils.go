@@ -1,6 +1,7 @@
 package utils
 
 import (
+	tcping "ChiaStart/Tcping"
 	"errors"
 	"io/ioutil"
 	"net"
@@ -50,6 +51,10 @@ func CheckConfig(OS, CurrentPath string) (conf *Config, err error) {
 		if err != nil {
 			return confYaml, errors.New("获取主机名失败\n10秒后程序自动关闭")
 		}
+	}
+	tp := tcping.Tcping(2, confYaml.Port, confYaml.Host)
+	if !tp {
+		return confYaml, errors.New("端口未开放\n10秒后程序自动关闭")
 	}
 	if len(confYaml.Port) <= 0 {
 		confYaml.Port = "8447"
