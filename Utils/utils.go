@@ -21,6 +21,8 @@ type Config struct {
 	ChiaPath string `yaml:"ChiaPath"`
 }
 
+var confYaml *Config
+
 // GetCurrentPath Get Current Path
 func GetCurrentPath() (string, error) {
 	path, err := os.Executable()
@@ -33,8 +35,6 @@ func GetCurrentPath() (string, error) {
 
 // CheckConfig check config
 func CheckConfig(OS, ConfigFile, LinkPathStr, ChiaExec string) (conf *Config, ChiaRun string, err error) {
-
-	confYaml := new(Config)
 	yamlFile, err := ioutil.ReadFile(ConfigFile)
 	if err != nil {
 		return confYaml, "", errors.New("读取配置文件出错\n10秒后程序自动关闭")
@@ -79,6 +79,18 @@ func CheckConfig(OS, ConfigFile, LinkPathStr, ChiaExec string) (conf *Config, Ch
 		ioutil.WriteFile(ConfigFile, data, 0644)
 	}
 	return confYaml, chiaRun, nil
+}
+
+func GetConfigIP(OS, ConfigFile, LinkPathStr string) (conf *Config, err error) {
+	yamlFile, err := ioutil.ReadFile(ConfigFile)
+	if err != nil {
+		return confYaml, errors.New("读取配置文件出错\n10秒后程序自动关闭")
+	}
+	err = yaml.Unmarshal(yamlFile, &confYaml)
+	if err != nil {
+		return confYaml, errors.New("读取配置文件出错\n10秒后程序自动关闭")
+	}
+	return confYaml, nil
 }
 
 // RunCommand run command

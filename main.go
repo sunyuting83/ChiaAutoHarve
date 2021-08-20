@@ -35,23 +35,27 @@ func main() {
 	ticker := time.NewTicker(time.Second * time.Duration(confYaml.ScanTime))
 	go func() {
 		for range ticker.C {
-			checkIP(confYaml, ConfigFile, ChiaRun, OS)
+			checkIP(confYaml.Host, ConfigFile, ChiaRun, OS, LinkPathStr)
 		}
 		ch <- 1
 	}()
 	<-ch
 }
 
-func checkIP(confYaml *utils.Config, ConfigFile, ChiaRun, OS string) {
-	ip, err := utils.GetDomainIp(confYaml.Host)
+func checkIP(host, ConfigFile, ChiaRun, OS, LinkPathStr string) {
+	ip, err := utils.GetDomainIp(host)
 	if err != nil {
 		fmt.Println(err)
 	}
-	if ip != confYaml.IP {
-		confYaml.IP = ip
-		data, _ := yaml.Marshal(&confYaml)
+	confIP, err := utils.GetConfigIP(OS, ConfigFile, LinkPathStr)
+	if err != nil {
+		fmt.Println(err)
+	}
+	if ip != confIP.IP {
+		confIP.IP = ip
+		data, _ := yaml.Marshal(&confIP)
 		ioutil.WriteFile(ConfigFile, data, 0644)
 		command := strings.Join([]string{ChiaRun, "start", "harvester", "-r"}, " ")
-		go utils.RunCommand(OS, command)
+		utils.RunCommand(OS, command)
 	}
 }

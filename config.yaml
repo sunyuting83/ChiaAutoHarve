@@ -1,5 +1,5 @@
-Host: a.chiafm.xyz
+Host: you.domain.com
 Port: "8447"
-IP: 118.72.29.113
+IP: 
 ScanTime: 60
-ChiaPath: /home/sun/program/chia-blockchain/venv/bin
+ChiaPath: /chia-blockchain/venv/bin
