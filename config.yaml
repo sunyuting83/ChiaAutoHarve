@@ -1,5 +1,0 @@
-Host: you.domain.com
-Port: "8447"
-IP: 
-ScanTime: 60
-ChiaPath: /chia-blockchain/venv/bin
