@@ -1,7 +1,7 @@
 package main
 
 import (
-	utils "ChiaStart/Utils"
+	utils "ChiaStart/Client/Utils"
 	"fmt"
 	"io/ioutil"
 	"os"

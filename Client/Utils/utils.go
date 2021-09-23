@@ -1,7 +1,7 @@
 package utils
 
 import (
-	tcping "ChiaStart/Tcping"
+	tcping "ChiaStart/Client/Tcping"
 	"errors"
 	"io/ioutil"
 	"net"
