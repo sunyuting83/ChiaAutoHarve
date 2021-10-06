@@ -12,7 +12,8 @@ import (
 )
 
 type Config struct {
-	Port       int    `yaml:"port"`
+	Port       string `yaml:"port"`
+	WsPath     string `yaml:"WsPath"`
 	SECRET_KEY string `yaml:"SECRET_KEY"`
 }
 
@@ -42,6 +43,16 @@ func CheckConfig(OS, CurrentPath string) (conf *Config, err error) {
 	err = yaml.Unmarshal(yamlFile, &confYaml)
 	if err != nil {
 		return confYaml, errors.New("读取配置文件出错\n10秒后程序自动关闭")
+	}
+	if len(confYaml.Port) <= 0 {
+		confYaml.Port = "13001"
+		data, _ := yaml.Marshal(&confYaml)
+		ioutil.WriteFile(ConfigFile, data, 0644)
+	}
+	if len(confYaml.WsPath) <= 0 {
+		confYaml.WsPath = "server"
+		data, _ := yaml.Marshal(&confYaml)
+		ioutil.WriteFile(ConfigFile, data, 0644)
 	}
 	return confYaml, nil
 }
