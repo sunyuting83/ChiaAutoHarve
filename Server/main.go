@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"os"
 	"runtime"
-	"strconv"
 	"strings"
 	"time"
 
@@ -32,15 +31,15 @@ func main() {
 		time.Sleep(time.Duration(10) * time.Second)
 		os.Exit(0)
 	}
-	port := strconv.Itoa(confYaml.Port)
+	path := strings.Join([]string{"/", confYaml.WsPath}, "")
 	gin.SetMode(gin.ReleaseMode)
 	app := gin.Default()
 	app.Use(utils.CORSMiddleware())
 	app.Use(SetConfigMiddleWare(confYaml))
 	{
-		app.GET("/server", controller.WsServer)
+		app.GET(path, controller.WsServer)
 	}
 
 	go ws.Manager.Start()
-	app.Run(strings.Join([]string{":", port}, ""))
+	app.Run(strings.Join([]string{":", confYaml.Port}, ""))
 }
