@@ -3,10 +3,10 @@ package controller
 import (
 	"ChiaStart/Server/ws"
 	"net/http"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
+	uuid "github.com/satori/go.uuid"
 )
 
 func WsServer(c *gin.Context) {
@@ -21,18 +21,18 @@ func WsServer(c *gin.Context) {
 			return
 		}
 	}
-	Group := strings.Split(ClientName, "_")[0]
-	Group = strings.Join([]string{Group, "_"}, "")
+	SECRET_KEY, _ := c.Get("token")
+	if ClientName != SECRET_KEY.(string) {
+		http.NotFound(c.Writer, c.Request)
+	}
 	conn, error := (&websocket.Upgrader{CheckOrigin: func(r *http.Request) bool { return true }}).Upgrade(c.Writer, c.Request, nil)
 	if error != nil {
 		http.NotFound(c.Writer, c.Request)
 		return
 	}
 
-	client := &ws.Client{ID: ClientName, Socket: conn, Send: make(chan []byte)}
-	ws.Manager.GID = Group
+	client := &ws.Client{ID: uuid.NewV4().String(), Socket: conn, Send: make(chan []byte)}
 	ws.Manager.Register <- client
-
 	go client.Read()
 	go client.Write()
 }
