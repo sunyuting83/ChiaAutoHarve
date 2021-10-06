@@ -14,6 +14,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// SetConfigMiddleWare set config
+func SetConfigMiddleWare(config *utils.Config) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Set("token", config.SECRET_KEY)
+		c.Writer.Status()
+	}
+}
+
 func main() {
 	OS := runtime.GOOS
 	CurrentPath, _ := utils.GetCurrentPath()
@@ -28,6 +36,7 @@ func main() {
 	gin.SetMode(gin.ReleaseMode)
 	app := gin.Default()
 	app.Use(utils.CORSMiddleware())
+	app.Use(SetConfigMiddleWare(confYaml))
 	{
 		app.GET("/server", controller.WsServer)
 	}

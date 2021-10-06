@@ -12,7 +12,6 @@ type ClientManager struct {
 	Broadcast  chan []byte
 	Register   chan *Client
 	Unregister chan *Client
-	GID        string
 }
 
 // Client is a websocket client
