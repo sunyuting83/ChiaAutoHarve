@@ -63,11 +63,7 @@ func CheckConfig(OS, ConfigFile, LinkPathStr string) (conf *Config, err error) {
 		ioutil.WriteFile(ConfigFile, data, 0644)
 	}
 	if len(confYaml.IP) <= 0 {
-		ip, err := GetIpAddr()
-		if err != nil {
-			return confYaml, errors.New("获取IP失败，请检查网络\n10秒后程序自动关闭")
-		}
-		confYaml.IP = ip
+		confYaml.IP = "0.0.0.0"
 		data, _ := yaml.Marshal(&confYaml)
 		ioutil.WriteFile(ConfigFile, data, 0644)
 	}

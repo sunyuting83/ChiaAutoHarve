@@ -1,6 +1,7 @@
 package ws
 
 import (
+	"ChiaStart/Server/utils"
 	"encoding/json"
 
 	"github.com/gorilla/websocket"
@@ -40,7 +41,7 @@ func (manager *ClientManager) Start() {
 // Send is to send ws message to ws client
 func (manager *ClientManager) Send(message []byte, ignore *Client) {
 	for conn := range manager.Clients {
-		if conn != ignore {
+		if conn == ignore {
 			conn.Send <- message
 		}
 	}
@@ -60,8 +61,18 @@ func (c *Client) Read() {
 			break
 		}
 		m := string(message)
-		jsonMessage, _ := json.Marshal(&Message{Sender: c.ID, Content: m})
-		Manager.Broadcast <- jsonMessage
+
+		if m == "getip" {
+			IP, _ := utils.ReadIPFile()
+			jsonMessage, _ := json.Marshal(&Message{Sender: c.ID, Content: IP})
+			Manager.Send(jsonMessage, c)
+		}
+		IsIP := utils.CheckIP(m)
+		if IsIP {
+			utils.SaveIPFile(message)
+			jsonMessage, _ := json.Marshal(&Message{Sender: c.ID, Content: m})
+			Manager.Broadcast <- jsonMessage
+		}
 	}
 }
 
