@@ -5,6 +5,8 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"runtime"
+	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -72,4 +74,51 @@ func CORSMiddleware() gin.HandlerFunc {
 
 		c.Next()
 	}
+}
+
+func CheckIP(ip string) bool {
+	if len(ip) < 7 || len(ip) > 15 {
+		return false
+	}
+
+	ipArray := strings.Split(ip, ".")
+	if len(ipArray) != 4 {
+		return false
+	}
+	for _, v := range ipArray {
+		number, err := strconv.Atoi(v)
+		if err != nil {
+			return false
+		}
+		if number < 0 || number > 255 {
+			return false
+		}
+	}
+	return true
+}
+
+func ReadIPFile() (string, error) {
+	OS := runtime.GOOS
+	CurrentPath, _ := GetCurrentPath()
+	LinkPathStr := "/"
+	if OS == "windows" {
+		LinkPathStr = "\\"
+	}
+	IPFile := strings.Join([]string{CurrentPath, "ipdb"}, LinkPathStr)
+	IP, err := ioutil.ReadFile(IPFile)
+	if err != nil {
+		return "0", err
+	}
+	return string(IP), err
+}
+
+func SaveIPFile(IP []byte) {
+	OS := runtime.GOOS
+	CurrentPath, _ := GetCurrentPath()
+	LinkPathStr := "/"
+	if OS == "windows" {
+		LinkPathStr = "\\"
+	}
+	IPFile := strings.Join([]string{CurrentPath, "ipdb"}, LinkPathStr)
+	ioutil.WriteFile(IPFile, IP, 0644)
 }
