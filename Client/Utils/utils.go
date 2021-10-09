@@ -4,21 +4,25 @@ import (
 	tcping "ChiaStart/Client/Tcping"
 	"errors"
 	"io/ioutil"
-	"net"
 	"os"
 	"os/exec"
+	"os/user"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"gopkg.in/yaml.v2"
 )
 
 type Config struct {
-	Host     string `yaml:"Host"`
-	Port     string `yaml:"Port"`
-	IP       string `yaml:"IP"`
-	ScanTime int    `yaml:"ScanTime"`
-	ChiaPath string `yaml:"ChiaPath"`
+	WsServer *WsServer `yaml:"WsServer"`
+	ChiaPath string    `yaml:"ChiaPath"`
+}
+type WsServer struct {
+	Host       string `yaml:"Host"`
+	Port       string `yaml:"Port"`
+	Path       string `yaml:"Path"`
+	SECRET_KEY string `yaml:"SECRET_KEY"`
 }
 
 var confYaml *Config
@@ -44,53 +48,22 @@ func CheckConfig(OS, ConfigFile, LinkPathStr, ChiaExec string) (conf *Config, Ch
 		return confYaml, "", errors.New("读取配置文件出错\n10秒后程序自动关闭")
 	}
 	if !IsDir(confYaml.ChiaPath) {
-		return confYaml, "", errors.New("Chia运行目录设置\n10秒后程序自动关闭")
+		return confYaml, "", errors.New("Chia运行目录设置错误\n10秒后程序自动关闭")
 	}
 	chiaRun := strings.Join([]string{confYaml.ChiaPath, ChiaExec}, LinkPathStr)
 	if !FileExist(chiaRun) {
-		return confYaml, "", errors.New("Chia运行目录设置\n10秒后程序自动关闭")
+		return confYaml, "", errors.New("Chia程序设置错误\n10秒后程序自动关闭")
 	}
-	if len(confYaml.Host) <= 0 {
+	if len(confYaml.WsServer.Host) <= 0 {
 		if err != nil {
 			return confYaml, "", errors.New("获取主机名失败\n10秒后程序自动关闭")
 		}
 	}
-	tp := tcping.Tcping(10, confYaml.Port, confYaml.Host)
+	tp := tcping.Tcping(10, confYaml.WsServer.Port, confYaml.WsServer.Host)
 	if !tp {
-		return confYaml, "", errors.New("端口未开放\n10秒后程序自动关闭")
-	}
-	if len(confYaml.Port) <= 0 {
-		confYaml.Port = "8447"
-		data, _ := yaml.Marshal(&confYaml)
-		ioutil.WriteFile(ConfigFile, data, 0644)
-	}
-	if confYaml.ScanTime <= 0 {
-		confYaml.ScanTime = 60
-		data, _ := yaml.Marshal(&confYaml)
-		ioutil.WriteFile(ConfigFile, data, 0644)
-	}
-	if len(confYaml.IP) <= 0 {
-		ip, err := GetDomainIp(confYaml.Host)
-		if err != nil {
-			return confYaml, "", errors.New("获取IP失败，请检查网络\n10秒后程序自动关闭")
-		}
-		confYaml.IP = ip
-		data, _ := yaml.Marshal(&confYaml)
-		ioutil.WriteFile(ConfigFile, data, 0644)
+		return confYaml, "", errors.New("WS服务器链接失败\n10秒后程序自动关闭")
 	}
 	return confYaml, chiaRun, nil
-}
-
-func GetConfigIP(OS, ConfigFile, LinkPathStr string) (conf *Config, err error) {
-	yamlFile, err := ioutil.ReadFile(ConfigFile)
-	if err != nil {
-		return confYaml, errors.New("读取配置文件出错\n10秒后程序自动关闭")
-	}
-	err = yaml.Unmarshal(yamlFile, &confYaml)
-	if err != nil {
-		return confYaml, errors.New("读取配置文件出错\n10秒后程序自动关闭")
-	}
-	return confYaml, nil
 }
 
 // RunCommand run command
@@ -150,10 +123,54 @@ func FileExist(path string) bool {
 	return !os.IsNotExist(err)
 }
 
-func GetDomainIp(host string) (ip string, err error) {
-	addr, err := net.ResolveIPAddr("ip", host)
-	if err != nil {
-		return "", errors.New("获取IP失败")
+func CheckIP(ip string) bool {
+	if len(ip) < 7 || len(ip) > 15 {
+		return false
 	}
-	return addr.String(), nil
+
+	ipArray := strings.Split(ip, ".")
+	if len(ipArray) != 4 {
+		return false
+	}
+	for _, v := range ipArray {
+		number, err := strconv.Atoi(v)
+		if err != nil {
+			return false
+		}
+		if number < 0 || number > 255 {
+			return false
+		}
+	}
+	return true
+}
+
+func GetUserInfo() (homedir string, err error) {
+	u, err := user.Current()
+	if err != nil {
+		return "", err
+	}
+	return u.HomeDir, nil
+}
+
+func MakeRun(ChiaRun, LinkPathStr, CurrentPath, OS, ip string) (command string) {
+	var (
+		ext string = "sh"
+	)
+	if OS == "windows" {
+		ext = "bat"
+	}
+	shellFile := strings.Join([]string{"runit", ext}, ".")
+	runPath := strings.Join([]string{CurrentPath, "script", shellFile}, LinkPathStr)
+	command = strings.Join([]string{runPath, ChiaRun, ip}, " ")
+	return
+}
+
+func RestartIt(shell, LinkPathStr, OS, ip string) {
+	homedir, _ := GetUserInfo()
+	configPath := strings.Join([]string{homedir, ".chia", "mainnet", "config", "config.yaml"}, LinkPathStr)
+	ChiaConfig, _ := ioutil.ReadFile(configPath)
+
+	if !strings.Contains(string(ChiaConfig), ip) {
+		RunCommand(OS, shell)
+	}
 }
