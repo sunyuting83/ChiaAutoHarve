@@ -29,12 +29,6 @@ type Message struct {
 	Content   string `json:"content,omitempty"`
 }
 
-type Command struct {
-	Command    string   `json:"Command"`
-	ClientList []string `json:"ClientList"`
-	SendTo     string   `json:"SendTo"`
-}
-
 // Manager define a ws server manager
 var Manager = ClientManager{
 	Broadcast:  make(chan []byte),

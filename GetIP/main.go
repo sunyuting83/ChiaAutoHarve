@@ -71,7 +71,7 @@ func main() {
 // ConnentWs Connent Ws
 func ConnentWs(confYaml *utils.Config, ConfigFile, IP string) bool {
 	host := strings.Join([]string{confYaml.WsServer.Host, confYaml.WsServer.Port}, ":")
-	wsurl := url.URL{Scheme: "ws", Host: host, Path: confYaml.WsServer.Path}
+	wsurl := url.URL{Scheme: confYaml.WsServer.WSType, Host: host, Path: confYaml.WsServer.Path}
 	var dialer *websocket.Dialer
 	conn, _, err := dialer.Dial(wsurl.String(), http.Header{"X-Api-Key": []string{confYaml.WsServer.SECRET_KEY}})
 

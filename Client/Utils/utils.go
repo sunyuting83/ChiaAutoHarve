@@ -22,7 +22,12 @@ type WsServer struct {
 	Host       string `yaml:"Host"`
 	Port       string `yaml:"Port"`
 	Path       string `yaml:"Path"`
+	WSType     string `yaml:"WSType"`
 	SECRET_KEY string `yaml:"SECRET_KEY"`
+}
+type Message struct {
+	Sender  string `json:"sender,omitempty"`
+	Content string `json:"content,omitempty"`
 }
 
 var confYaml *Config
