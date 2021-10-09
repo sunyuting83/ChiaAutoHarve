@@ -2,6 +2,7 @@ package main
 
 import (
 	utils "ChiaStart/Client/Utils"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -16,7 +17,7 @@ import (
 // ConnentWs Connent Ws
 func ConnentWs(confYaml *utils.Config, OS, ChiaRun, LinkPathStr, CurrentPath string) {
 	host := strings.Join([]string{confYaml.WsServer.Host, confYaml.WsServer.Port}, ":")
-	wsurl := url.URL{Scheme: "ws", Host: host, Path: confYaml.WsServer.Path}
+	wsurl := url.URL{Scheme: confYaml.WsServer.WSType, Host: host, Path: confYaml.WsServer.Path}
 	var dialer *websocket.Dialer
 	conn, _, err := dialer.Dial(wsurl.String(), http.Header{"X-Api-Key": []string{confYaml.WsServer.SECRET_KEY}})
 
@@ -34,10 +35,14 @@ func ConnentWs(confYaml *utils.Config, OS, ChiaRun, LinkPathStr, CurrentPath str
 			time.Sleep(time.Duration(10) * time.Second)
 			ConnentWs(confYaml, OS, ChiaRun, LinkPathStr, CurrentPath)
 		} else {
-			IsIP := utils.CheckIP(string(message))
+			var p *utils.Message
+			if err := json.Unmarshal(message, &p); err != nil {
+				fmt.Println("error")
+			}
+			IsIP := utils.CheckIP(p.Content)
 			if IsIP {
-				shell := utils.MakeRun(ChiaRun, LinkPathStr, CurrentPath, OS, string(message))
-				go utils.RestartIt(shell, LinkPathStr, OS, string(message))
+				shell := utils.MakeRun(ChiaRun, LinkPathStr, CurrentPath, OS, p.Content)
+				go utils.RestartIt(shell, LinkPathStr, OS, p.Content)
 			}
 		}
 	}

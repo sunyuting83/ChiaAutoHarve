@@ -23,6 +23,7 @@ type WsServer struct {
 	Host       string `yaml:"Host"`
 	Port       string `yaml:"Port"`
 	Path       string `yaml:"Path"`
+	WSType     string `yaml:"WSType"`
 	SECRET_KEY string `yaml:"SECRET_KEY"`
 }
 
