@@ -43,32 +43,25 @@ func GetCurrentPath() (string, error) {
 }
 
 // CheckConfig check config
-func CheckConfig(OS, ConfigFile, LinkPathStr, ChiaExec string) (conf *Config, ChiaRun string, err error) {
+func CheckConfig(OS, ConfigFile, LinkPathStr string) (conf *Config, err error) {
 	yamlFile, err := ioutil.ReadFile(ConfigFile)
 	if err != nil {
-		return confYaml, "", errors.New("读取配置文件出错\n10秒后程序自动关闭")
+		return confYaml, errors.New("读取配置文件出错\n10秒后程序自动关闭")
 	}
 	err = yaml.Unmarshal(yamlFile, &confYaml)
 	if err != nil {
-		return confYaml, "", errors.New("读取配置文件出错\n10秒后程序自动关闭")
-	}
-	if !IsDir(confYaml.ChiaPath) {
-		return confYaml, "", errors.New("Chia运行目录设置错误\n10秒后程序自动关闭")
-	}
-	chiaRun := strings.Join([]string{confYaml.ChiaPath, ChiaExec}, LinkPathStr)
-	if !FileExist(chiaRun) {
-		return confYaml, "", errors.New("Chia程序设置错误\n10秒后程序自动关闭")
+		return confYaml, errors.New("读取配置文件出错\n10秒后程序自动关闭")
 	}
 	if len(confYaml.WsServer.Host) <= 0 {
 		if err != nil {
-			return confYaml, "", errors.New("获取主机名失败\n10秒后程序自动关闭")
+			return confYaml, errors.New("获取主机名失败\n10秒后程序自动关闭")
 		}
 	}
 	tp := tcping.Tcping(10, confYaml.WsServer.Port, confYaml.WsServer.Host)
 	if !tp {
-		return confYaml, "", errors.New("WS服务器链接失败\n10秒后程序自动关闭")
+		return confYaml, errors.New("WS服务器链接失败\n10秒后程序自动关闭")
 	}
-	return confYaml, chiaRun, nil
+	return confYaml, nil
 }
 
 // RunCommand run command
