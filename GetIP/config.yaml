@@ -1,9 +1,0 @@
-IP: 
-ScanTime: 120
-SendStatus: true
-WsServer:
-  Host: 127.0.0.1
-  Port: "13001"
-  Path: server
-  WSType: ws
-  SECRET_KEY: asdfasdfass
