@@ -1,0 +1,7 @@
+WsServer:
+  Host: 127.0.0.1
+  Port: "13001"
+  Path: server
+  WSType: ws
+  SECRET_KEY: asdfasdfass
+ChiaPath: /chia-blockchain/venv/bin
