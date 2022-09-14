@@ -1,6 +1,6 @@
 WsServer:
   Host: 127.0.0.1
-  Port: "1300"
+  Port: "13001"
   Path: server
   WSType: ws
   SECRET_KEY: 

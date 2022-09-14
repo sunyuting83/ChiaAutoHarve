@@ -40,6 +40,7 @@ type RustDeskOptions struct {
 	Key                    string `toml:"key"`
 	RendezvousServers      string `toml:"rendezvous-servers"`
 	CustomRendezvousServer string `toml:"custom-rendezvous-server"`
+	DirectServer           string `toml:"direct-server"`
 }
 
 var config *Config
